@@ -11,6 +11,15 @@ jobs:
       - name: Get latest code
         uses: actions/checkout@v4
 
+      # Étape de Cache : accélère les futurs déploiements
+      - name: Cache Composer dependencies
+        uses: actions/cache@v3
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
       - name: Install Dependencies (Composer)
         run: composer install --no-dev --optimize-autoloader
 
@@ -22,7 +31,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ./www/
-          # ATTENTION : On ne doit plus ignorer vendor ici
+          # On ignore Git, Node, et les dossiers persistants sur le serveur
           exclude: |
             **/.git*
             **/node_modules/**
