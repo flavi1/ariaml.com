@@ -51,6 +51,20 @@ class Application extends BaseApplication
 
         // By default, does not allow fallback classes.
         FactoryLocator::add('Table', (new TableLocator())->allowFallbackClass(false));
+        
+		/* * AJOUT ICI :
+         * On désactive le chargement automatique de DebugKit s'il n'est pas installé 
+         */
+        if (Configure::read('debug')) {
+            if (!class_exists(\DebugKit\Plugin::class)) {
+                // On force la configuration pour dire à CakePHP de ne PAS chercher DebugKit
+                Configure::write('DebugKit.forceNoSsl', true); // Juste pour manipuler la config
+                // Et on s'assure qu'il n'est pas dans la liste des plugins à charger
+            } else {
+                $this->addPlugin('DebugKit');
+            }
+        }
+        
     }
 
     /**
