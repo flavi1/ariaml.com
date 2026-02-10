@@ -11,6 +11,9 @@ jobs:
       - name: Get latest code
         uses: actions/checkout@v4
 
+      - name: Install Dependencies (Composer)
+        run: composer install --no-dev --optimize-autoloader
+
       - name: Sync via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -19,6 +22,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./
           server-dir: ./www/
+          # ATTENTION : On ne doit plus ignorer vendor ici
           exclude: |
             **/.git*
             **/node_modules/**
