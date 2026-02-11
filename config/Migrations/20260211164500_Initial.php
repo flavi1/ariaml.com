@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 use Migrations\BaseMigration; 
 
-class Initial extends BaseMigration
+class 20260211164500_Initial extends BaseMigration
 {
     /**
      * Up Method.
