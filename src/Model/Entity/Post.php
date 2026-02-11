@@ -36,5 +36,6 @@ class Post extends Entity
         'published' => true,
         'created' => true,
         'modified' => true,
+        '_translations' => true
     ];
 }

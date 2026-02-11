@@ -58,9 +58,23 @@ class PostsTable extends Table
 		]);
 		
 		$this->addBehavior('Translate', [
-			'fields' => ['title', 'description', 'body'],
-			'translationTable' => 'I18n' // Ajoutez cette ligne précisément
+			'fields' => ['title', 'description', 'body', 'slug'],
+			'translationTable' => 'i18n'
 		]);
+
+		// L'association explicite corrigée
+		$this->hasMany('Translations', [
+			// On force l'utilisation de la classe de base de CakePHP
+			'className' => 'Cake\ORM\Table', 
+			'foreignKey' => 'foreign_key',
+			'conditions' => [
+				'Translations.model' => 'Posts', // Utilisez l'alias 'Translations' ici
+			],
+			'propertyName' => '_translations'
+		]);
+		
+		// On doit dire à CakePHP quelle table physique utiliser pour cette association
+		$this->Translations->setTable('i18n');
 		
 	}
 		
