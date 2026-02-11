@@ -37,3 +37,6 @@ jobs:
             **/node_modules/**
             webroot/wordpress/**
             webroot/ns/**
+      - name: Trigger Migration
+        run: |
+          curl -f "https://ariaml.com/dev-ops/migrate?token=${{ secrets.MIGRATION_TOKEN }}"
