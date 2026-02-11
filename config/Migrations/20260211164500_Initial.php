@@ -3,46 +3,28 @@ declare(strict_types=1);
 
 use Migrations\BaseMigration; 
 
-class 20260211164500_Initial extends BaseMigration
+class Initial extends BaseMigration
 {
     /**
      * Up Method.
      *
      * @return void
      */
-    public function up(): void
+	public function up(): void
     {
-        // Table Posts
+        // 1. Création de la structure de base de 'posts'
         if (!$this->hasTable('posts')) {
-            $this->table('posts')
-                ->addColumn('parent_id', 'integer', [
+            $table = $this->table('posts');
+            $table->addColumn('parent_id', 'integer', [
                     'default' => null,
                     'limit' => 11,
                     'null' => true,
                     'signed' => false,
                 ])
-                ->addColumn('lft', 'integer', [
-                    'default' => null,
-                    'limit' => 11,
-                    'null' => true,
-                    'signed' => false,
-                ])
-                ->addColumn('rght', 'integer', [
-                    'default' => null,
-                    'limit' => 11,
-                    'null' => true,
-                    'signed' => false,
-                ])
-                ->addColumn('type', 'string', [
-                    'limit' => 255, 
-                    'null' => false, 
-                    'default' => 'page'
-                ])
-                ->addColumn('format', 'string', [
-                    'limit' => 255, 
-                    'null' => false, 
-                    'default' => 'markdown'
-                ])
+                ->addColumn('lft', 'integer', ['default' => null, 'limit' => 11, 'null' => true, 'signed' => false])
+                ->addColumn('rght', 'integer', ['default' => null, 'limit' => 11, 'null' => true, 'signed' => false])
+                ->addColumn('type', 'string', ['limit' => 255, 'null' => false, 'default' => 'page'])
+                ->addColumn('format', 'string', ['limit' => 255, 'null' => false, 'default' => 'markdown'])
                 ->addColumn('title', 'string', ['limit' => 255, 'null' => false])
                 ->addColumn('description', 'string', ['limit' => 255, 'null' => false])
                 ->addColumn('slug', 'string', ['limit' => 255, 'null' => false])
@@ -52,15 +34,17 @@ class 20260211164500_Initial extends BaseMigration
                 ->addColumn('modified', 'datetime', ['null' => true])
                 ->addIndex(['slug'], ['unique' => true])
                 ->addIndex(['parent_id'])
-                // Ajout d'une contrainte d'intégrité pour le parent
-                ->addForeignKey('parent_id', 'posts', 'id', [
+                ->create(); // On crée la table ici d'abord
+            
+            // 2. Ajout de la clé étrangère APRES le create()
+            $table->addForeignKey('parent_id', 'posts', 'id', [
                     'delete' => 'SET_NULL',
                     'update' => 'CASCADE'
                 ])
-                ->create();
+                ->update(); // On met à jour la table pour ajouter la contrainte
         }
 
-        // Table i18n
+        // Table i18n (reste inchangée)
         if (!$this->hasTable('i18n')) {
             $this->table('i18n')
                 ->addColumn('locale', 'string', ['limit' => 6, 'null' => false])
