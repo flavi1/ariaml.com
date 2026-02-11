@@ -12,10 +12,15 @@ class Initial extends BaseMigration
      */
 	public function up(): void
     {
-        // 1. Création de la structure de base de 'posts'
         if (!$this->hasTable('posts')) {
-            $table = $this->table('posts');
-            $table->addColumn('parent_id', 'integer', [
+            // On définit explicitement 'id' en UNSIGNED pour correspondre à 'parent_id'
+            $table = $this->table('posts', ['id' => false, 'primary_key' => ['id']]);
+            $table->addColumn('id', 'integer', [
+                    'autoIncrement' => true,
+                    'limit' => 11,
+                    'signed' => false,
+                ])
+                ->addColumn('parent_id', 'integer', [
                     'default' => null,
                     'limit' => 11,
                     'null' => true,
@@ -34,14 +39,14 @@ class Initial extends BaseMigration
                 ->addColumn('modified', 'datetime', ['null' => true])
                 ->addIndex(['slug'], ['unique' => true])
                 ->addIndex(['parent_id'])
-                ->create(); // On crée la table ici d'abord
+                ->create();
             
-            // 2. Ajout de la clé étrangère APRES le create()
+            // Maintenant, l'ALTER TABLE passera car SIGNED(id) == SIGNED(parent_id)
             $table->addForeignKey('parent_id', 'posts', 'id', [
                     'delete' => 'SET_NULL',
                     'update' => 'CASCADE'
                 ])
-                ->update(); // On met à jour la table pour ajouter la contrainte
+                ->update();
         }
 
         // Table i18n (reste inchangée)
