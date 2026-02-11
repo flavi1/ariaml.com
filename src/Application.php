@@ -11,8 +11,8 @@ declare(strict_types=1);
  *
  * @copyright Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
  * @link      https://cakephp.org CakePHP(tm) Project
- * @since     3.3.0
- * @license   https://opensource.org/licenses/mit-license.php MIT License
+ * @since      3.3.0
+ * @license    https://opensource.org/licenses/mit-license.php MIT License
  */
 namespace App;
 
@@ -29,6 +29,13 @@ use Cake\ORM\Locator\TableLocator;
 use Cake\Routing\Middleware\AssetMiddleware;
 use Cake\Routing\Middleware\RoutingMiddleware;
 
+/* --- Imports pour l'Authentication --- */
+use Authentication\AuthenticationService;
+use Authentication\AuthenticationServiceInterface;
+use Authentication\AuthenticationServiceProviderInterface;
+use Authentication\Middleware\AuthenticationMiddleware;
+use Psr\Http\Message\ServerRequestInterface;
+
 /**
  * Application setup class.
  *
@@ -37,7 +44,7 @@ use Cake\Routing\Middleware\RoutingMiddleware;
  *
  * @extends \Cake\Http\BaseApplication<\App\Application>
  */
-class Application extends BaseApplication
+class Application extends BaseApplication implements AuthenticationServiceProviderInterface
 {
     /**
      * Load all the application configuration and bootstrap logic.
@@ -51,6 +58,9 @@ class Application extends BaseApplication
 
         // By default, does not allow fallback classes.
         FactoryLocator::add('Table', (new TableLocator())->allowFallbackClass(false));
+        
+        // Chargement du plugin Authentication
+        $this->addPlugin('Authentication');
     }
 
     /**
@@ -72,60 +82,80 @@ class Application extends BaseApplication
             ]))
 
             // Add routing middleware.
-            // If you have a large number of routes connected, turning on routes
-            // caching in production could improve performance.
-            // See https://github.com/CakeDC/cakephp-cached-routing
             ->add(new RoutingMiddleware($this))
 
-            // Parse various types of encoded request bodies so that they are
-            // available as array through $request->getData()
-            // https://book.cakephp.org/5/en/controllers/middleware.html#body-parser-middleware
+            // Parse various types of encoded request bodies
             ->add(new BodyParserMiddleware())
 
+            // L'authentification doit se situer APRES le routing mais AVANT le CSRF
+            ->add(new AuthenticationMiddleware($this))
+
             // Cross Site Request Forgery (CSRF) Protection Middleware
-            // https://book.cakephp.org/5/en/security/csrf.html#cross-site-request-forgery-csrf-middleware
             ->add(new CsrfProtectionMiddleware([
                 'httponly' => true,
             ]))
             
-            // Multilangue
+            // Multilangue (Middleware personnalisé)
             ->add(function ($request, $handler) {
-				$lang = $request->getParam('lang', 'fr'); // 'fr' par défaut
-				if ($lang === 'en') {
-					\Cake\I18n\I18n::setLocale('en_US');
-				} else {
-					\Cake\I18n\I18n::setLocale('fr_FR');
-				}
-				return $handler->handle($request);
-			});
+                $lang = $request->getParam('lang', 'fr');
+                if ($lang === 'en') {
+                    \Cake\I18n\I18n::setLocale('en_US');
+                } else {
+                    \Cake\I18n\I18n::setLocale('fr_FR');
+                }
+                return $handler->handle($request);
+            });
 
         return $middlewareQueue;
     }
 
     /**
-     * Register application container services.
+     * Fournisseur de service d'authentification
      *
-     * @param \Cake\Core\ContainerInterface $container The Container to update.
-     * @return void
-     * @link https://book.cakephp.org/5/en/development/dependency-injection.html#dependency-injection
+     * @param \Psr\Http\Message\ServerRequestInterface $request Request
+     * @return \Authentication\AuthenticationServiceInterface
+     */
+    public function getAuthenticationService(ServerRequestInterface $request): AuthenticationServiceInterface
+    {
+        $authenticationService = new AuthenticationService([
+            'unauthenticatedRedirect' => '/users/login',
+            'queryParam' => 'redirect',
+        ]);
+
+        // Charger les identifiants (Session d'abord, puis Formulaire)
+        $authenticationService->loadAuthenticator('Authentication.Session');
+        $authenticationService->loadAuthenticator('Authentication.Form', [
+            'fields' => [
+                'username' => 'username',
+                'password' => 'password',
+            ],
+            'loginUrl' => '/users/login',
+        ]);
+
+        // Charger l'identificateur (vérification du mot de passe en base)
+        $authenticationService->loadIdentifier('Authentication.Password', [
+            'fields' => [
+                'username' => 'username',
+                'password' => 'password',
+            ]
+        ]);
+
+        return $authenticationService;
+    }
+
+    /**
+     * Register application container services.
      */
     public function services(ContainerInterface $container): void
     {
-        // Allow your Tables to be dependency injected
-        //$container->delegate(new \Cake\ORM\Locator\TableContainer());
+        // ...
     }
 
     /**
      * Register custom event listeners here
-     *
-     * @param \Cake\Event\EventManagerInterface $eventManager
-     * @return \Cake\Event\EventManagerInterface
-     * @link https://book.cakephp.org/5/en/core-libraries/events.html#registering-listeners
      */
     public function events(EventManagerInterface $eventManager): EventManagerInterface
     {
-        // $eventManager->on(new SomeCustomListenerClass());
-
         return $eventManager;
     }
 }
