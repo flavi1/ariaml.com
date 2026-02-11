@@ -11,8 +11,6 @@ class DevOpsController extends AppController
         $tokenAttendu = Configure::read('Security.migration_token');
         $tokenRecu = $this->request->getQuery('token');
 
-die($tokenAttendu);
-
         if (!$tokenAttendu || $tokenRecu !== $tokenAttendu) {
             throw new \Cake\Http\Exception\ForbiddenException('Accès refusé.');
         }
