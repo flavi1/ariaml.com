@@ -18,9 +18,13 @@ class DevOpsController extends AppController
         $migrator = new Migrations();
         // Exécute les migrations et capture le résultat
         if ($migrator->migrate()) {
-            return $this->response->withStringBody('Migration réussie !');
+            return $this->response
+							->withStatus(200)
+							->withStringBody('Migration réussie !');
         }
         
-        return $this->response->withStringBody('Erreur de migration.');
+        return $this->response
+						->withStatus(500)
+						->withStringBody('Erreur de migration.');
     }
 }
