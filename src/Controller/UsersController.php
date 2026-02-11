@@ -1,7 +1,10 @@
 <?php
 declare(strict_types=1);
-
 namespace App\Controller;
+
+use Cake\Core\Configure;
+use Cake\Http\Exception\ForbiddenException;
+
 
 /**
  * Users Controller
@@ -10,6 +13,15 @@ namespace App\Controller;
  */
 class UsersController extends AppController
 {
+	
+	public function beforeFilter(\Cake\Event\EventInterface $event)
+	{
+		parent::beforeFilter($event);
+		// Autoriser login, logout et votre méthode seed (token)
+		$this->Authentication->addUnauthenticatedActions(['login', 'logout', 'seed']);
+	}
+	
+	
     /**
      * Index method
      *
@@ -97,13 +109,6 @@ class UsersController extends AppController
 
         return $this->redirect(['action' => 'index']);
     }
-    
-	public function beforeFilter(\Cake\Event\EventInterface $event)
-    {
-        parent::beforeFilter($event);
-        // On autorise le login et le logout sans être connecté
-        $this->Authentication->addUnauthenticatedActions(['login', 'logout']);
-    }
 
     public function login()
     {
@@ -135,8 +140,7 @@ class UsersController extends AppController
         }
     }
     
-	use Cake\Core\Configure;
-	use Cake\Http\Exception\ForbiddenException;
+
 
 	/**
 	 * Création du premier utilisateur via token de sécurité
@@ -146,6 +150,7 @@ class UsersController extends AppController
 	{
 		$token = $this->request->getQuery('token');
 		$expectedToken = Configure::read('Security.migration_token');
+		$firstPass = Configure::read('Security.firstPassword');
 
 		// Sécurité : on compare le token
 		if (!$token || $token !== $expectedToken) {
@@ -160,7 +165,7 @@ class UsersController extends AppController
 
 		$user = $this->Users->newEmptyEntity();
 		$user->username = 'admin'; // Vous pourrez le changer plus tard
-		$user->password = 'votre_mot_de_passe_temporaire'; // À changer après connexion !
+		$user->password = $firstPass; // À changer après connexion !
 
 		if ($this->Users->save($user)) {
 			$this->Flash->success('Utilisateur admin créé avec succès.');
