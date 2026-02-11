@@ -17,7 +17,7 @@ use Cake\ORM\Entity;
  * @property \Cake\I18n\DateTime $created
  * @property \Cake\I18n\DateTime $modified
  */
-class Article extends Entity
+class Post extends Entity
 {
     /**
      * Fields that can be mass assigned using newEntity() or patchEntity().

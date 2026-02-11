@@ -27,19 +27,19 @@ use Cake\Routing\RouteBuilder;
 return function (RouteBuilder $routes): void {
     $routes->setRouteClass(DashedRoute::class);
 
-	$routes->connect('/{lang}/dashboard', ['controller' => 'Articles', 'action' => 'dashboard'], ['lang' => 'fr|en']);
+	$routes->connect('/{lang}/dashboard', ['controller' => 'Posts', 'action' => 'dashboard'], ['lang' => 'fr|en']);
 
     // 1. LES ROUTES PRIORITAIRES (SANS SCOPE)
-    // On définit explicitement les articles avec la langue AVANT tout le reste
+    // On définit explicitement les Posts avec la langue AVANT tout le reste
     $routes->connect(
-        '/{lang}/articles', 
-        ['controller' => 'Articles', 'action' => 'index'], 
-        ['_name' => 'articles_index', 'lang' => 'fr|en']
+        '/{lang}/posts', 
+        ['controller' => 'Posts', 'action' => 'index'], 
+        ['_name' => 'Posts_index', 'lang' => 'fr|en']
     )->setExtensions(['json']);
 
     $routes->connect(
-        '/{lang}/articles/{action}/*', 
-        ['controller' => 'Articles'], 
+        '/{lang}/posts/{action}/*', 
+        ['controller' => 'Posts'], 
         ['lang' => 'fr|en']
     )->setExtensions(['json']);
 

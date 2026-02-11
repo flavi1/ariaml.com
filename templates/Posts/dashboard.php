@@ -1,5 +1,5 @@
-<div ng-app="CmsDashboard" ng-controller="ArticlesCtrl">
-    <h2>Gestion des Articles</h2>
+<div ng-app="CmsDashboard" ng-controller="PostsCtrl">
+    <h2>Gestion des Posts</h2>
     
     <input type="text" ng-model="search" placeholder="Filtrer les titres...">
 
@@ -12,7 +12,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr ng-repeat="article in articles | filter:search">
+            <tr ng-repeat="article in posts | filter:search">
                 <td>{{ article.id }}</td>
                 <td>{{ article.title }}</td>
                 <td>
@@ -29,17 +29,17 @@
     (function() {
         var app = angular.module('CmsDashboard', []);
 
-        app.controller('ArticlesCtrl', function($scope, $http) {
-            // On récupère la langue depuis le segment de l'URL (ex: /fr/articles/dashboard)
+        app.controller('PostsCtrl', function($scope, $http) {
+            // On récupère la langue depuis le segment de l'URL (ex: /fr/posts/dashboard)
             var pathArray = window.location.pathname.split('/');
             var lang = pathArray[1] || 'fr'; 
 
-            $scope.articles = [];
+            $scope.posts = [];
 
             // Appel direct vers votre point de données
-            $http.get('/' + lang + '/articles.json')
+            $http.get('/' + lang + '/posts.json')
                 .then(function(response) {
-                    $scope.articles = response.data.articles;
+                    $scope.posts = response.data.posts;
                 })
                 .catch(function(err) {
                     console.error("Erreur lors du chargement des données", err);

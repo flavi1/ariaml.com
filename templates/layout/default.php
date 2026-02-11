@@ -37,8 +37,8 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <nav class="top-nav">
         <div class="top-nav-title">
             <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
-			<?= $this->Html->link('FR', ['lang' => 'fr', 'controller' => 'Articles', 'action' => 'index']) ?>
-			<?= $this->Html->link('EN', ['lang' => 'en', 'controller' => 'Articles', 'action' => 'index']) ?>
+			<?= $this->Html->link('FR', ['lang' => 'fr', 'controller' => 'Posts', 'action' => 'index']) ?>
+			<?= $this->Html->link('EN', ['lang' => 'en', 'controller' => 'Posts', 'action' => 'index']) ?>
         </div>
         <div class="top-nav-links">
             <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/">Documentation</a>
