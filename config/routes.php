@@ -1,55 +1,58 @@
 <?php
-/**
- * Routes configuration.
- *
- * In this file, you set up routes to your controllers and their actions.
- * Routes are very important mechanism that allows you to freely connect
- * different URLs to chosen controllers and their actions (functions).
- *
- * It's loaded within the context of `Application::routes()` method which
- * receives a `RouteBuilder` instance `$routes` as method argument.
- *
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @license       https://opensource.org/licenses/mit-license.php MIT License
- */
-
 use Cake\Routing\Route\DashedRoute;
 use Cake\Routing\RouteBuilder;
+use Cake\Core\Configure;
 
 return function (RouteBuilder $routes): void {
     $routes->setRouteClass(DashedRoute::class);
+    
+	$localesConfig = Configure::read('App.locales', ['fr' => 'fr_FR']);
+    $defaultLang = Configure::read('App.defaultLanguage', 'fr');
+    
+    // Génère dynamiquement la chaîne "fr|en|es" pour la validation des routes
+    $langs = implode('|', array_keys($localesConfig));
 
-	$routes->connect('/{lang}/dashboard', ['controller' => 'Posts', 'action' => 'dashboard'], ['lang' => 'fr|en']);
+    // --- 1. ROUTES AVEC LANGUE DYNAMIQUE ---
+    $routes->connect(
+        '/{lang}/dashboard', 
+        ['controller' => 'Posts', 'action' => 'dashboard'], 
+        ['lang' => $langs]
+    );
 
-    // 1. LES ROUTES PRIORITAIRES (SANS SCOPE)
-    // On définit explicitement les Posts avec la langue AVANT tout le reste
     $routes->connect(
         '/{lang}/posts', 
         ['controller' => 'Posts', 'action' => 'index'], 
-        ['_name' => 'Posts_index', 'lang' => 'fr|en']
+        ['_name' => 'Posts_index', 'lang' => $langs]
     )->setExtensions(['json']);
 
     $routes->connect(
         '/{lang}/posts/{action}/*', 
         ['controller' => 'Posts'], 
-        ['lang' => 'fr|en']
+        ['lang' => $langs]
     )->setExtensions(['json']);
 
-    // 2. LA RACINE DU SITE
-    $routes->connect('/', ['controller' => 'Pages', 'action' => 'display', 'home']);
+
+    // --- 2. ROUTES SANS PRÉFIXE (Utilisant la config) ---
+    $routes->connect(
+        '/posts', 
+        ['controller' => 'Posts', 'action' => 'index', 'lang' => $defaultLang]
+    );
+
+    $routes->connect(
+        '/dashboard', 
+        ['controller' => 'Posts', 'action' => 'dashboard', 'lang' => $defaultLang]
+    );
+
+    // Racine du site
+    $routes->connect('/', [
+        'controller' => 'Pages', 
+        'action' => 'display', 
+        'home', 
+        'lang' => $defaultLang
+    ]);
     
-    // 3. LE RESTE DES PAGES STATIQUES
     $routes->connect('/pages/*', 'Pages::display');
 
-    // 4. LE FALLBACK GÉNÉRAL (POUR LE RESTE)
     $routes->scope('/', function (RouteBuilder $builder): void {
         $builder->fallbacks();
     });

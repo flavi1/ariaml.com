@@ -96,15 +96,20 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
             ]))
             
             // Multilangue (Middleware personnalisé)
-            ->add(function ($request, $handler) {
-                $lang = $request->getParam('lang', 'fr');
-                if ($lang === 'en') {
-                    \Cake\I18n\I18n::setLocale('en_US');
-                } else {
-                    \Cake\I18n\I18n::setLocale('fr_FR');
-                }
-                return $handler->handle($request);
-            });
+			->add(function ($request, $handler) {
+				$locales = \Cake\Core\Configure::read('App.locales', ['fr' => 'fr_FR']);
+				$default = \Cake\Core\Configure::read('App.defaultLanguage', 'fr');
+				
+				// On récupère la langue de l'URL, sinon celle par défaut
+				$lang = $request->getParam('lang', $default);
+				
+				// On applique la locale correspondante, ou la version FR par défaut si la clé n'existe pas
+				$selectedLocale = $locales[$lang] ?? $locales[$default];
+				
+				\Cake\I18n\I18n::setLocale($selectedLocale);
+				
+				return $handler->handle($request);
+			});
 
         return $middlewareQueue;
     }
