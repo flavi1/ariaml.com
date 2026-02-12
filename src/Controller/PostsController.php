@@ -62,11 +62,7 @@ class PostsController extends AppController
             $this->Flash->error(__('The node could not be saved. Please, try again.'));
         }
 
-        $parentPosts = $this->Posts->ParentPosts->find('treeList', [
-            'keyPath' => 'id',
-            'valuePath' => 'title',
-            'spacer' => '→ '
-        ]);
+        $parentPosts = $this->Posts->ParentPosts->find('treeList');
 
         $locales = Configure::read('App.locales');
         $defaultLang = Configure::read('App.defaultLanguage');
@@ -96,11 +92,7 @@ class PostsController extends AppController
             $this->Flash->error(__('The node could not be saved. Please, try again.'));
         }
 
-        $parentPosts = $this->Posts->ParentPosts->find('treeList', [
-            'keyPath' => 'id',
-            'valuePath' => 'title',
-            'spacer' => '→ '
-        ]);
+        $parentPosts = $this->Posts->ParentPosts->find('treeList');
 
         $locales = Configure::read('App.locales');
         $defaultLang = Configure::read('App.defaultLanguage');
