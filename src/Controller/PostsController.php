@@ -76,9 +76,7 @@ class PostsController extends AppController
      */
     public function edit($id = null)
     {
-        $post = $this->Posts->get($id, [
-            'contain' => ['Translations']
-        ]);
+        $post = $this->Posts->get($id, contain: ['Translations']);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
             $post = $this->Posts->patchEntity($post, $this->request->getData(), [
