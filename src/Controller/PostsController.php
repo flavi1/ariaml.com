@@ -4,7 +4,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use Cake\Core\Configure;
-use Cake\Event\EventInterface;
 
 /**
  * Posts Controller
@@ -15,12 +14,10 @@ class PostsController extends AppController
 {
     /**
      * Index method
-     *
-     * @return \Cake\Http\Response|null|void Renders view
      */
     public function index()
     {
-        // On utilise l'ordre du TreeBehavior (lft) pour garder la structure logique du document
+        // Utilisation de l'ordre structurel du TreeBehavior
         $query = $this->Posts->find()
             ->contain(['Translations'])
             ->orderBy(['Posts.lft' => 'ASC']);
@@ -39,9 +36,8 @@ class PostsController extends AppController
      */
     public function view($id = null)
     {
-        $post = $this->Posts->get($id, [
-            'contain' => ['Translations', 'ParentPosts', 'ChildPosts'],
-        ]);
+        // Correction : Arguments nommés pour CakePHP 5
+        $post = $this->Posts->get($id, contain: ['Translations', 'ParentPosts', 'ChildPosts']);
         $this->set(compact('post'));
     }
 
@@ -62,10 +58,16 @@ class PostsController extends AppController
             $this->Flash->error(__('The node could not be saved. Please, try again.'));
         }
 
-        $parentPosts = $this->Posts->ParentPosts->find('treeList');
+        // Correction : Suppression de la dépréciation treeList
+        $parentPosts = $this->Posts->ParentPosts->find('treeList', 
+            keyPath: 'id',
+            valuePath: 'title',
+            spacer: '→ '
+        )->toArray();
 
-        $locales = Configure::read('App.locales');
-        $defaultLang = Configure::read('App.defaultLanguage');
+        // Correction : Lecture sécurisée de la config
+        $locales = Configure::read('App.locales') ?? [];
+        $defaultLang = Configure::read('App.defaultLanguage', 'fr');
         $secondaryLangs = array_keys(array_diff_key($locales, [$defaultLang => '']));
 
         $this->set(compact('post', 'parentPosts', 'defaultLang', 'secondaryLangs'));
@@ -76,6 +78,7 @@ class PostsController extends AppController
      */
     public function edit($id = null)
     {
+        // Correction : Arguments nommés pour CakePHP 5
         $post = $this->Posts->get($id, contain: ['Translations']);
 
         if ($this->request->is(['patch', 'post', 'put'])) {
@@ -90,10 +93,16 @@ class PostsController extends AppController
             $this->Flash->error(__('The node could not be saved. Please, try again.'));
         }
 
-        $parentPosts = $this->Posts->ParentPosts->find('treeList');
+        // Correction : Suppression de la dépréciation treeList
+        $parentPosts = $this->Posts->ParentPosts->find('treeList', 
+            keyPath: 'id',
+            valuePath: 'title',
+            spacer: '→ '
+        )->toArray();
 
-        $locales = Configure::read('App.locales');
-        $defaultLang = Configure::read('App.defaultLanguage');
+        // Correction : Lecture sécurisée de la config
+        $locales = Configure::read('App.locales') ?? [];
+        $defaultLang = Configure::read('App.defaultLanguage', 'fr');
         $secondaryLangs = array_keys(array_diff_key($locales, [$defaultLang => '']));
 
         $this->set(compact('post', 'parentPosts', 'defaultLang', 'secondaryLangs'));
@@ -107,7 +116,6 @@ class PostsController extends AppController
         $this->request->allowMethod(['post', 'delete']);
         $post = $this->Posts->get($id);
         
-        // Le TreeBehavior gère automatiquement les enfants lors de la suppression
         if ($this->Posts->delete($post)) {
             $this->Flash->success(__('The node has been deleted.'));
         } else {
@@ -118,14 +126,13 @@ class PostsController extends AppController
     }
 
     /**
-     * Dashboard method (AriaML / AngularJS)
+     * Dashboard method (CmsDashboard)
      */
     public function dashboard()
     {
-        // Ici, on peut injecter la config nécessaire au JS
         $config = [
-            'locales' => Configure::read('App.locales'),
-            'default' => Configure::read('App.defaultLanguage')
+            'locales' => Configure::read('App.locales') ?? [],
+            'default' => Configure::read('App.defaultLanguage', 'fr')
         ];
         $this->set(compact('config'));
     }
