@@ -44,7 +44,7 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
 <body>
     <nav class="top-nav">
         <div class="top-nav-title">
-            <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
+            <a href="<?= $this->Url->build('/') ?>"><span>Aria</span>ML</a>
             
             <div class="lang-switcher">
                 <?php 
