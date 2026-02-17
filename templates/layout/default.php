@@ -53,7 +53,7 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
                     array_merge($queryParams, ['lang' => $defaultLang]),
                     ['class' => 'lang-item' . ($currentLang === $defaultLang ? ' active' : '')]
                 );
-
+/*
                 // 2. Affichage des autres langues
                 foreach ($locales as $code => $locale): 
                     if ($code === $defaultLang) continue;
@@ -63,6 +63,7 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
                         ['class' => 'lang-item' . ($currentLang === $code ? ' active' : '')]
                     );
                 endforeach; 
+*/
                 ?>
             </div>
         </div>
