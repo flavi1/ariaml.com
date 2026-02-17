@@ -12,43 +12,40 @@ return function (RouteBuilder $routes): void {
     $defaultLang = Configure::read('App.defaultLanguage', 'fr');
     $homeId = Configure::read('Settings.home_page_id');
 
-    // --- 2. ROUTES SYSTÈME ET DEVOPS (Priorité Maximale) ---
-    // On les place en haut pour qu'aucune règle "Slug" ne les intercepte.
+    // --- 2. ROUTES SYSTÈME ET DEVOPS ---
     $routes->connect('/dev-ops/migrate', ['controller' => 'DevOps', 'action' => 'migrate']);
     
-    // On définit explicitement les routes d'authentification
     $routes->connect('/login', ['controller' => 'Users', 'action' => 'login'], ['_name' => 'login']);
     $routes->connect('/users/login', ['controller' => 'Users', 'action' => 'login']);
     $routes->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
 
-    // --- 3. ROUTES D'ADMINISTRATION (Dashboard & CRUD) ---
+    // --- 3. ROUTES D'ADMINISTRATION ---
     $routes->scope('/', function (RouteBuilder $builder) use ($langs, $defaultLang) {
-        // Dashboard
         $builder->connect('/{lang}/dashboard', ['controller' => 'Posts', 'action' => 'dashboard'], ['lang' => $langs]);
         $builder->connect('/dashboard', ['controller' => 'Posts', 'action' => 'dashboard', 'lang' => $defaultLang]);
 
-        // CRUD Posts
         $builder->connect('/{lang}/posts/{action}/*', ['controller' => 'Posts'], ['lang' => $langs]);
         $builder->connect('/posts/{action}/*', ['controller' => 'Posts', 'lang' => $defaultLang]);
     });
 
     // --- 4. RACINES DU SITE (HOME) ---
+    // Utilisation de setPass() pour garantir que homeId est bien transmis sans casser le matching
     if ($homeId) {
         // site.com/
         $routes->connect('/', 
-            ['controller' => 'Posts', 'action' => 'publicView', $homeId, 'lang' => $defaultLang],
-            ['_name' => 'home_default', 'pass' => [0]]
-        );
+            ['controller' => 'Posts', 'action' => 'publicView', 'lang' => $defaultLang], 
+            ['_name' => 'home_default']
+        )->setPass([(string)$homeId]);
 
-        // site.com/fr (Le '$' dans la regex de lang assurerait l'étanchéité si besoin)
+        // site.com/fr
         $routes->connect('/{lang}', 
-            ['controller' => 'Posts', 'action' => 'publicView', $homeId],
-            ['lang' => $langs, '_name' => 'home_lang', 'pass' => [0]]
-        );
+            ['controller' => 'Posts', 'action' => 'publicView'], 
+            ['lang' => $langs, '_name' => 'home_lang']
+        )->setPass([(string)$homeId]);
     }
 
     // --- 5. ROUTES PUBLIQUES (SLUGS HIÉRARCHIQUES) ---
-    // Ces routes sont les plus basses car elles sont les plus "gloutonnes".
+    // On utilise une regex qui exclut les routes déjà définies si nécessaire
     
     // site.com/fr/parent/enfant
     $routes->connect('/{lang}/{path}', 
@@ -71,7 +68,6 @@ return function (RouteBuilder $routes): void {
         ]
     );
 
-    // Fallbacks
     $routes->scope('/', function (RouteBuilder $builder) {
         $builder->fallbacks();
     });
