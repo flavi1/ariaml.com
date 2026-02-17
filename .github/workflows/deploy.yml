@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get latest code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Étape de Cache : accélère les futurs déploiements
       - name: Cache Composer dependencies
