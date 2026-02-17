@@ -39,7 +39,7 @@ class PostsController extends AppController
 				$settingsTable->save($setting);
 				
 				$this->Flash->success(__('Home page updated.'));
-				return $this->redirect(['action' => 'index']);
+				return $this->redirect(['action' => 'dashboard']);
 			}
 		}
 
@@ -120,7 +120,7 @@ class PostsController extends AppController
             ]);
             if ($this->Posts->save($post)) {
                 $this->Flash->success(__('The node has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect(['action' => 'dashboard']);
             }
             $this->Flash->error(__('The node could not be saved. Please, try again.'));
         }
@@ -158,7 +158,7 @@ class PostsController extends AppController
 
 			if ($this->Posts->save($post)) {
 				$this->Flash->success(__('The node has been saved.'));
-				return $this->redirect(['action' => 'index']);
+				return $this->redirect(['action' => 'dashboard']);
 			}
 			$this->Flash->error(__('The node could not be saved. Please, try again.'));
 		}
@@ -192,7 +192,7 @@ class PostsController extends AppController
             $this->Flash->error(__('The node could not be deleted. Please, try again.'));
         }
 
-        return $this->redirect(['action' => 'index']);
+        return $this->redirect(['action' => 'dashboard']);
     }
 
 }
