@@ -29,19 +29,17 @@ return function (RouteBuilder $routes): void {
     });
 
 	// --- 4. RACINES DU SITE (HOME) ---
-	if ($homeId) {
-		// site.com/
-		$routes->connect('/', 
-			['controller' => 'Posts', 'action' => 'publicView', 'idOrPath' => $homeId, 'lang' => $defaultLang], 
-			['_name' => 'home_default']
-		);
+	// site.com/
+	$routes->connect('/', 
+		['controller' => 'Posts', 'action' => 'publicView', 'isHome' => true, 'lang' => $defaultLang], 
+		['_name' => 'home_default']
+	);
 
-		// site.com/fr
-		$routes->connect('/{lang}', 
-			['controller' => 'Posts', 'action' => 'publicView', 'idOrPath' => $homeId], 
-			['lang' => $langs, '_name' => 'home_lang']
-		);
-	}
+	// site.com/fr
+	$routes->connect('/{lang}', 
+		['controller' => 'Posts', 'action' => 'publicView', 'isHome' => true], 
+		['lang' => $langs, '_name' => 'home_lang']
+	);
 
     // --- 5. ROUTES PUBLIQUES (SLUGS HIÉRARCHIQUES) ---
     // On utilise une regex qui exclut les routes déjà définies si nécessaire

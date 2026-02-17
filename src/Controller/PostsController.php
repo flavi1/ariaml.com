@@ -71,26 +71,25 @@ class PostsController extends AppController
     
 	public function publicView($idOrPath = null)
 	{
-	// Debug de sécurité
-		if ($idOrPath === null) {
-			 // Si c'est encore null ici, c'est que le $homeId n'était pas chargé 
-			 // au moment où le fichier routes.php a été lu (table settings vide ?)
-			 throw new \Cake\Datasource\Exception\RecordNotFoundException("ID Home manquant.");
-		}
-
 		$lang = $this->request->getParam('lang');
 		\Cake\I18n\I18n::setLocale($lang);
 
-		// Force le test sur la valeur brute
-		$isId = is_numeric($idOrPath);
+		// Récupération de l'ID de la home (chargé dans Application.php)
+		$homeId = \Cake\Core\Configure::read('Settings.home_page_id');
+		$isHomeRequested = $this->request->getParam('isHome', false);
 
-		if ($isId) {
+		// 1. Détermination de la cible (ID ou Slug)
+		if ($isHomeRequested) {
+			if (!$homeId) {
+				throw new \Cake\Datasource\Exception\RecordNotFoundException("Configuration 'home_page_id' manquante.");
+			}
+			$query = $this->Posts->find('translations', locale: $lang)
+				->where(['Posts.id' => (int)$homeId]);
+		} elseif (is_numeric($idOrPath)) {
 			$query = $this->Posts->find('translations', locale: $lang)
 				->where(['Posts.id' => (int)$idOrPath]);
 		} else {
-			$pathArray = explode('/', (string)$idOrPath);
-			$slug = end($pathArray);
-			
+			$slug = end(explode('/', (string)$idOrPath));
 			$query = $this->Posts->find('translations', locale: $lang)
 				->where([
 					'OR' => [
@@ -100,20 +99,10 @@ class PostsController extends AppController
 				]);
 		}
 
-if (!$query->count()) {
-    dd([
-        'requested_id_or_path' => $idOrPath,
-        'detected_lang' => $lang,
-        'home_id_from_config' => \Cake\Core\Configure::read('Settings.home_page_id'),
-        'sql' => $query->sql()
-    ]);
-}
-
-		// debug($query->sql()); // Décommentez pour voir la requête en cas d'erreur
 		$post = $query->contain(['ParentPosts', 'ChildPosts'])->firstOrFail();
 
-		// Rigueur SEO : uniquement pour les slugs
-		if (!$isId) {
+		// 2. Rigueur SEO (Uniquement pour les accès par slug)
+		if (!$isHomeRequested && !is_numeric($idOrPath)) {
 			$isDefault = ($lang === \Cake\Core\Configure::read('App.defaultLanguage'));
 			$translatedSlug = $post->_translations[$lang]->slug ?? null;
 			$expectedSlug = ($isDefault || empty($translatedSlug)) ? $post->slug : $translatedSlug;
@@ -123,9 +112,10 @@ if (!$query->count()) {
 			}
 		}
 
-		$isHome = (int)$post->id === (int)\Cake\Core\Configure::read('Settings.home_page_id');
+		$isHome = (int)$post->id === (int)$homeId;
 		$this->set(compact('post', 'isHome'));
 	}
+	
     /**
      * Add method
      */
