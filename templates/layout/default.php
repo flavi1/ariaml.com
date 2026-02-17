@@ -46,26 +46,32 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
         <div class="top-nav-title">
             <a href="<?= $this->Url->build('/') ?>"><span>Aria</span>ML</a>
             
-            <div class="lang-switcher">
-                <?php 
-                // 1. Affichage de la langue par défaut
-                echo $this->Html->link(strtoupper($defaultLang), 
-                    array_merge($queryParams, ['lang' => $defaultLang]),
-                    ['class' => 'lang-item' . ($currentLang === $defaultLang ? ' active' : '')]
-                );
-/*
-                // 2. Affichage des autres langues
-                foreach ($locales as $code => $locale): 
-                    if ($code === $defaultLang) continue;
-                    echo '<span class="lang-separator">|</span>';
-                    echo $this->Html->link(strtoupper($code), 
-                        array_merge($queryParams, ['lang' => $code]),
-                        ['class' => 'lang-item' . ($currentLang === $code ? ' active' : '')]
-                    );
-                endforeach; 
-*/
-                ?>
-            </div>
+			<div class="lang-switcher">
+				<?php 
+				// Préparation des paramètres pour les pages de contenu (hors home)
+				$isHome = $this->get('isHome', false);
+
+				foreach ($locales as $code => $locale): 
+					// Style CSS
+					$class = 'lang-item' . ($currentLang === $code ? ' active' : '');
+					$label = strtoupper($code);
+					
+					// Séparateur (sauf pour le premier élément)
+					if ($code !== array_key_first($locales)) {
+						echo '<span class="lang-separator">|</span>';
+					}
+
+					if ($isHome) {
+						// SI HOME : On force l'utilisation des routes nommées dédiées
+						$routeName = ($code === $defaultLang) ? 'home_default' : 'home_lang';
+						echo $this->Html->link($label, ['_name' => $routeName, 'lang' => $code], ['class' => $class]);
+					} else {
+						// SI PAGE CLASSIQUE : On garde la logique de fusion des paramètres (Slugs, etc.)
+						echo $this->Html->link($label, array_merge($queryParams, ['lang' => $code]), ['class' => $class]);
+					}
+				endforeach; 
+				?>
+			</div>
         </div>
         <div class="top-nav-links">
             <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/">Documentation</a>
