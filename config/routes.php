@@ -14,6 +14,7 @@ return function (RouteBuilder $routes): void {
 
     // --- A. ROUTES SYSTÈME (Priorité Maximale) ---
     // On définit explicitement les routes qui ne doivent JAMAIS être des slugs
+	$routes->connect('/dev-ops/migrate', ['controller' => 'DevOps', 'action' => 'migrate']);
     $routes->connect('/login', ['controller' => 'Users', 'action' => 'login']);
     $routes->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
 

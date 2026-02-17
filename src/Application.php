@@ -120,12 +120,13 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
 				$locales = \Cake\Core\Configure::read('App.locales', ['fr' => 'fr_FR']);
 				$default = \Cake\Core\Configure::read('App.defaultLanguage', 'fr');
 				
-				// On récupère la langue de l'URL, sinon celle par défaut
+				// Si nous sommes sur la route de migration, on ne cherche pas à traduire
+				if (str_contains($request->getUri()->getPath(), '/dev-ops/migrate')) {
+					return $handler->handle($request);
+				}
+
 				$lang = $request->getParam('lang', $default);
-				
-				// On applique la locale correspondante, ou la version FR par défaut si la clé n'existe pas
 				$selectedLocale = $locales[$lang] ?? $locales[$default];
-				
 				\Cake\I18n\I18n::setLocale($selectedLocale);
 				
 				return $handler->handle($request);
