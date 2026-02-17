@@ -69,20 +69,19 @@ class PostsController extends AppController
         $this->set(compact('post'));
     }
     
-	public function publicView($id = null, $path = null)
+	public function publicView($idOrPath = null)
 	{
 		$lang = $this->request->getParam('lang');
 		\Cake\I18n\I18n::setLocale($lang);
 
-		// 1. Identification par ID (Routes Home)
-		if ($id && is_numeric($id)) {
+		// 1. On cherche par quoi on identifie le Post
+		if (is_numeric($idOrPath)) {
+			// C'est un ID (provenant des routes Home)
 			$query = $this->Posts->find('translations', locale: $lang)
-				->where(['Posts.id' => $id]);
-		} 
-		// 2. Identification par Path (Routes Slugs)
-		elseif ($path) {
-			// On transforme "un/deux" en ['un', 'deux']
-			$pathArray = explode('/', $path);
+				->where(['Posts.id' => $idOrPath]);
+		} else {
+			// C'est un chemin (ex: "parent/enfant" ou "one")
+			$pathArray = explode('/', (string)$idOrPath);
 			$slug = end($pathArray);
 			
 			$query = $this->Posts->find('translations', locale: $lang)
@@ -92,19 +91,16 @@ class PostsController extends AppController
 						'PostsTranslations.slug' => $slug
 					]
 				]);
-		} else {
-			throw new \Cake\Datasource\Exception\RecordNotFoundException();
 		}
 
 		$post = $query->contain(['ParentPosts', 'ChildPosts'])->firstOrFail();
 
-		// 3. Rigueur SEO (uniquement si on a un path)
-		if ($path) {
-			$slugUsed = end($pathArray);
-			$isDefaultLang = ($lang === \Cake\Core\Configure::read('App.defaultLanguage'));
-			$expectedSlug = $isDefaultLang ? $post->slug : ($post->_translations[$lang]->slug ?? $post->slug);
+		// 2. Rigueur SEO : Si on a accédé par slug, on vérifie qu'il est correct pour la langue
+		if (!is_numeric($idOrPath)) {
+			$isDefault = ($lang === \Cake\Core\Configure::read('App.defaultLanguage'));
+			$expectedSlug = $isDefault ? $post->slug : ($post->_translations[$lang]->slug ?? $post->slug);
 
-			if ($slugUsed !== $expectedSlug) {
+			if ($slug !== $expectedSlug) {
 				return $this->redirect(['lang' => $lang, 'path' => $expectedSlug], 301);
 			}
 		}

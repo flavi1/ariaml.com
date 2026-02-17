@@ -5,60 +5,71 @@ use Cake\Core\Configure;
 
 return function (RouteBuilder $routes): void {
     $routes->setRouteClass(DashedRoute::class);
-    
-    $localesConfig = Configure::read('App.locales', ['fr' => 'fr_FR']);
+
+    // Initialisation des variables globales AriaML
+    $locales = Configure::read('App.locales', ['fr' => 'fr_FR']);
+    $langs = implode('|', array_keys($locales));
     $defaultLang = Configure::read('App.defaultLanguage', 'fr');
-    $langs = implode('|', array_keys($localesConfig));
     $homeId = Configure::read('Settings.home_page_id');
 
-    // --- 1. ROUTES D'ADMINISTRATION (Dashboard & CRUD) ---
-    // On les place en premier pour qu'elles ne soient jamais confondues avec des slugs
-    $routes->connect('/{lang}/dashboard', ['controller' => 'Posts', 'action' => 'dashboard'], ['lang' => $langs]);
-    $routes->connect('/dashboard', ['controller' => 'Posts', 'action' => 'dashboard', 'lang' => $defaultLang]);
+    // --- A. ROUTES SYSTÈME (Priorité Maximale) ---
+    // On définit explicitement les routes qui ne doivent JAMAIS être des slugs
+    $routes->connect('/login', ['controller' => 'Users', 'action' => 'login']);
+    $routes->connect('/logout', ['controller' => 'Users', 'action' => 'logout']);
 
-    $routes->connect('/{lang}/posts/{action}/*', ['controller' => 'Posts'], ['lang' => $langs])->setExtensions(['json']);
-    $routes->connect('/posts/{action}/*', ['controller' => 'Posts', 'lang' => $defaultLang])->setExtensions(['json']);
+    // --- B. ROUTES DASHBOARD / ADMIN ---
+    $routes->scope('/', function (RouteBuilder $builder) use ($langs, $defaultLang) {
+        // Dashboard avec ou sans langue
+        $builder->connect('/{lang}/dashboard', ['controller' => 'Posts', 'action' => 'dashboard'], ['lang' => $langs]);
+        $builder->connect('/dashboard', ['controller' => 'Posts', 'action' => 'dashboard', 'lang' => $defaultLang]);
 
-	// --- 2. RACINES DU SITE (HOME) ---
-	if ($homeId) {
-		$routes->connect('/', 
-			['controller' => 'Posts', 'action' => 'publicView', $homeId, 'lang' => $defaultLang],
-			['_name' => 'home_default', 'pass' => [0]]
-		);
+        // CRUD Posts (Edit, Add, Delete, Index)
+        $builder->connect('/{lang}/posts/{action}/*', ['controller' => 'Posts'], ['lang' => $langs]);
+        $builder->connect('/posts/{action}/*', ['controller' => 'Posts', 'lang' => $defaultLang]);
+    });
 
-		// On force cette route à ne matcher QUE le code langue exact (ex: /fr ou /en)
-		$routes->connect('/{lang}', 
-			['controller' => 'Posts', 'action' => 'publicView', $homeId],
-			['lang' => $langs, '_name' => 'home_lang', 'pass' => [0]]
-		);
-	}
+    // --- C. RACINES DU SITE (HOME) ---
+    if ($homeId) {
+        // Racine pure (site.com/)
+        $routes->connect('/', 
+            ['controller' => 'Posts', 'action' => 'publicView', $homeId, 'lang' => $defaultLang],
+            ['_name' => 'home_default', 'pass' => [0]]
+        );
 
-	// --- 3. ROUTES PUBLIQUES (SLUGS HIÉRARCHIQUES) ---
-	// Notez le '+' après le deuxième slash : on veut AU MOINS un caractère après /fr/
-	$routes->connect(
-		'/{lang}/{path}', 
-		['controller' => 'Posts', 'action' => 'publicView'],
-		[
-			'lang' => $langs, 
-			'path' => '.+', // Regex : au moins un caractère
-			'_name' => 'public_view_lang',
-			'pass' => ['path']
-		]
-	);
+        // Racine par langue (site.com/fr)
+        // La regex '$' assure que ça ne match pas /fr/quelque-chose
+        $routes->connect('/{lang}', 
+            ['controller' => 'Posts', 'action' => 'publicView', $homeId],
+            ['lang' => $langs, '_name' => 'home_lang', 'pass' => [0]]
+        );
+    }
 
-	$routes->connect(
-		'/{path}', 
-		['controller' => 'Posts', 'action' => 'publicView', 'lang' => $defaultLang],
-		[
-			'path' => '.+', 
-			'_name' => 'public_view',
-			'pass' => ['path']
-		]
-	);
+    // --- D. ROUTES PUBLIQUES (SLUGS) ---
+    // Ces routes capturent tout ce qui n'a pas été matché au-dessus
+    
+    // site.com/fr/parent/enfant
+    $routes->connect('/{lang}/{path}', 
+        ['controller' => 'Posts', 'action' => 'publicView'],
+        [
+            'lang' => $langs,
+            'path' => '[a-zA-Z0-9\/\-]+', // Regex autorisant les slugs et les slashs
+            '_name' => 'slug_lang',
+            'pass' => ['path']
+        ]
+    );
 
-    // --- 4. FALLBACKS ---
-    $routes->connect('/pages/*', 'Pages::display');
-    $routes->scope('/', function (RouteBuilder $builder): void {
+    // site.com/parent/enfant (langue par défaut)
+    $routes->connect('/{path}', 
+        ['controller' => 'Posts', 'action' => 'publicView', 'lang' => $defaultLang],
+        [
+            'path' => '[a-zA-Z0-9\/\-]+',
+            '_name' => 'slug_default',
+            'pass' => ['path']
+        ]
+    );
+
+    // Fallbacks finaux
+    $routes->scope('/', function (RouteBuilder $builder) {
         $builder->fallbacks();
     });
 };
