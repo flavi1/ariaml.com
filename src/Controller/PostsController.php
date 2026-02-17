@@ -19,7 +19,7 @@ class PostsController extends AppController
     {
         // Utilisation de l'ordre structurel du TreeBehavior
         $query = $this->Posts->find()
-            ->contain(['Translations'])
+            ->contain(['PostsTranslations'])
             ->orderBy(['Posts.lft' => 'ASC']);
 
         $posts = $this->paginate($query);
@@ -37,7 +37,7 @@ class PostsController extends AppController
     public function view($id = null)
     {
         // Correction : Arguments nommés pour CakePHP 5
-        $post = $this->Posts->get($id, contain: ['Translations', 'ParentPosts', 'ChildPosts']);
+        $post = $this->Posts->get($id, contain: ['PostsTranslations', 'ParentPosts', 'ChildPosts']);
         $this->set(compact('post'));
     }
 
@@ -79,19 +79,22 @@ class PostsController extends AppController
     public function edit($id = null)
     {
         // Correction : Arguments nommés pour CakePHP 5
-        $post = $this->Posts->get($id, contain: ['Translations']);
+		$post = $this->Posts->find('translations')
+			->where(['Posts.id' => $id])
+			->contain(['ParentPosts']) // Charge les autres associations normalement
+			->firstOrFail();
 
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $post = $this->Posts->patchEntity($post, $this->request->getData(), [
-                'translations' => true
-            ]);
+		if ($this->request->is(['patch', 'post', 'put'])) {
+			$post = $this->Posts->patchEntity($post, $this->request->getData(), [
+				'translations' => true
+			]);
 
-            if ($this->Posts->save($post)) {
-                $this->Flash->success(__('The node has been saved.'));
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The node could not be saved. Please, try again.'));
-        }
+			if ($this->Posts->save($post)) {
+				$this->Flash->success(__('The node has been saved.'));
+				return $this->redirect(['action' => 'index']);
+			}
+			$this->Flash->error(__('The node could not be saved. Please, try again.'));
+		}
 
         // Correction : Suppression de la dépréciation treeList
         $parentPosts = $this->Posts->ParentPosts->find('treeList', 
