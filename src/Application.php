@@ -63,6 +63,10 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         // Chargement du plugin Authentication
         $this->addPlugin('Authentication');
         
+		if (PHP_SAPI === 'cli') {
+			return;
+		}
+        
 		// Chargement dynamique des réglages depuis la table 'settings'
 		try {
 			$settingsTable = (new TableLocator())->get('Settings');
