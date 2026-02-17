@@ -95,6 +95,15 @@ class PostsController extends AppController
 				]);
 		}
 
+if (!$query->count()) {
+    dd([
+        'requested_id_or_path' => $idOrPath,
+        'detected_lang' => $lang,
+        'home_id_from_config' => \Cake\Core\Configure::read('Settings.home_page_id'),
+        'sql' => $query->sql()
+    ]);
+}
+
 		// debug($query->sql()); // Décommentez pour voir la requête en cas d'erreur
 		$post = $query->contain(['ParentPosts', 'ChildPosts'])->firstOrFail();
 
