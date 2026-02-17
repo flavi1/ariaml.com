@@ -1,20 +1,21 @@
 <?php
 /**
- * CakePHP(tm) : Rapid Development Framework (https://cakephp.org)
- * Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- *
- * Licensed under The MIT License
- * For full copyright and license information, please see the LICENSE.txt
- * Redistributions of files must retain the above copyright notice.
- *
- * @copyright     Copyright (c) Cake Software Foundation, Inc. (https://cakefoundation.org)
- * @link          https://cakephp.org CakePHP(tm) Project
- * @since         0.10.0
- * @license       https://opensource.org/licenses/mit-license.php MIT License
  * @var \App\View\AppView $this
+ * @var string $cakeDescription
  */
+use Cake\Core\Configure;
 
 $cakeDescription = 'CakePHP: the rapid development php framework';
+
+// Préparation des langues
+$locales = Configure::read('App.locales', ['fr' => 'fr_FR']);
+$defaultLang = Configure::read('App.defaultLanguage', 'fr');
+$currentLang = $this->request->getParam('lang', $defaultLang);
+
+// On récupère les paramètres de la route actuelle (controller, action, slugs...)
+// pour que le changement de langue reste sur la même page
+$queryParams = $this->request->getAttribute('params');
+unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'], $queryParams['isAjax']);
 ?>
 <!DOCTYPE html>
 <html>
@@ -32,13 +33,38 @@ $cakeDescription = 'CakePHP: the rapid development php framework';
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
+    
+    <style>
+        .lang-switcher { display: inline-block; margin-left: 2rem; font-size: 1.2rem; }
+        .lang-item { font-weight: bold; text-decoration: none; padding: 0 0.5rem; }
+        .lang-item.active { color: #d33c43; text-decoration: underline; }
+        .lang-separator { color: #606c76; opacity: 0.5; }
+    </style>
 </head>
 <body>
     <nav class="top-nav">
         <div class="top-nav-title">
             <a href="<?= $this->Url->build('/') ?>"><span>Cake</span>PHP</a>
-			<?= $this->Html->link('FR', ['lang' => 'fr', 'controller' => 'Posts', 'action' => 'index']) ?>
-			<?= $this->Html->link('EN', ['lang' => 'en', 'controller' => 'Posts', 'action' => 'index']) ?>
+            
+            <div class="lang-switcher">
+                <?php 
+                // 1. Affichage de la langue par défaut
+                echo $this->Html->link(strtoupper($defaultLang), 
+                    array_merge($queryParams, ['lang' => $defaultLang]),
+                    ['class' => 'lang-item' . ($currentLang === $defaultLang ? ' active' : '')]
+                );
+
+                // 2. Affichage des autres langues
+                foreach ($locales as $code => $locale): 
+                    if ($code === $defaultLang) continue;
+                    echo '<span class="lang-separator">|</span>';
+                    echo $this->Html->link(strtoupper($code), 
+                        array_merge($queryParams, ['lang' => $code]),
+                        ['class' => 'lang-item' . ($currentLang === $code ? ' active' : '')]
+                    );
+                endforeach; 
+                ?>
+            </div>
         </div>
         <div class="top-nav-links">
             <a target="_blank" rel="noopener" href="https://book.cakephp.org/5/">Documentation</a>
