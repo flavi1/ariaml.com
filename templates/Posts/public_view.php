@@ -9,7 +9,7 @@
 $this->assign('title', $post->title);
 ?>
 
-<article class="aria-ml-node <?= $isHome ? 'is-home' : '' ?>" 
+<article class="article-node <?= $isHome ? 'is-home' : '' ?>" 
          data-id="<?= $post->id ?>" 
          data-type="<?= h($post->type) ?>"
          data-format="<?= h($post->format) ?>">
@@ -30,18 +30,16 @@ $this->assign('title', $post->title);
         <?php endif; ?>
     </header>
 
-    <div class="node-body">
-        <?php if ($post->format === 'markdown'): ?>
-            <?php 
-                // Si vous avez un helper Markdown, utilisez-le ici. 
-                // Sinon, autoParagraph pour une mise en forme basique.
-                echo $this->Text->autoParagraph(h($post->body)); 
-            ?>
-        <?php else: ?>
-            <?php // Rendu HTML direct pour AriaML ?>
-            <?= $post->body ?>
-        <?php endif; ?>
-    </div>
+	<div class="node-body">
+		<?php if ($post->format === 'markdown'): ?>
+			<div class="markdown-content">
+				<?= $this->Markdown->render($post->body) ?>
+			</div>
+		<?php else: ?>
+			<?php // Rendu HTML direct pour AriaML ?>
+			<?= $post->body ?>
+		<?php endif; ?>
+	</div>
 
     <?php if (!empty($post->child_posts)): ?>
     <footer class="node-children">
@@ -62,7 +60,7 @@ $this->assign('title', $post->title);
 </article>
 
 <style>
-    .aria-ml-node { max-width: 800px; margin: 0 auto; padding: 2rem; }
+    .article-node { max-width: 800px; margin: 0 auto; padding: 2rem; }
     .node-header { margin-bottom: 2rem; border-bottom: 1px solid #eee; padding-bottom: 1rem; }
     .node-header h1 { font-size: 2.5rem; color: #2d3748; }
     .lead { font-size: 1.25rem; color: #718096; }
