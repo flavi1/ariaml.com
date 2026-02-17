@@ -85,12 +85,12 @@ class PostsController extends AppController
 			$slug = end($pathArray);
 			
 			$query = $this->Posts->find('translations', locale: $lang)
-				->where([
-					'OR' => [
-						'Posts.slug' => $slug,
-						'PostsTranslations.slug' => $slug
-					]
-				]);
+			->where([
+				'OR' => [
+					'Posts.slug' => $slug,
+					'PostsTranslation.slug' => $slug // Correction : "Translation" au singulier
+				]
+			]);
 		}
 
 		$post = $query->contain(['ParentPosts', 'ChildPosts'])->firstOrFail();
