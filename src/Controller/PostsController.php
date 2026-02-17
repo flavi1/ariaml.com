@@ -74,31 +74,35 @@ class PostsController extends AppController
 		$lang = $this->request->getParam('lang');
 		\Cake\I18n\I18n::setLocale($lang);
 
-		// 1. On cherche par quoi on identifie le Post
-		if (is_numeric($idOrPath)) {
-			// C'est un ID (provenant des routes Home)
+		// Si on arrive de la home, $idOrPath est l'ID. 
+		// Si on arrive d'un slug, c'est une chaîne non-numérique.
+		$isId = is_numeric($idOrPath);
+
+		if ($isId) {
+			// Force le type entier pour la requête
 			$query = $this->Posts->find('translations', locale: $lang)
-				->where(['Posts.id' => $idOrPath]);
+				->where(['Posts.id' => (int)$idOrPath]);
 		} else {
-			// C'est un chemin (ex: "parent/enfant" ou "one")
 			$pathArray = explode('/', (string)$idOrPath);
 			$slug = end($pathArray);
 			
 			$query = $this->Posts->find('translations', locale: $lang)
-			->where([
-				'OR' => [
-					'Posts.slug' => $slug,
-					'PostsTranslation.slug' => $slug // Correction : "Translation" au singulier
-				]
-			]);
+				->where([
+					'OR' => [
+						'Posts.slug' => $slug,
+						'PostsTranslation.slug' => $slug
+					]
+				]);
 		}
 
+		// debug($query->sql()); // Décommentez pour voir la requête en cas d'erreur
 		$post = $query->contain(['ParentPosts', 'ChildPosts'])->firstOrFail();
 
-		// 2. Rigueur SEO : Si on a accédé par slug, on vérifie qu'il est correct pour la langue
-		if (!is_numeric($idOrPath)) {
+		// Rigueur SEO : uniquement pour les slugs
+		if (!$isId) {
 			$isDefault = ($lang === \Cake\Core\Configure::read('App.defaultLanguage'));
-			$expectedSlug = $isDefault ? $post->slug : ($post->_translations[$lang]->slug ?? $post->slug);
+			$translatedSlug = $post->_translations[$lang]->slug ?? null;
+			$expectedSlug = ($isDefault || empty($translatedSlug)) ? $post->slug : $translatedSlug;
 
 			if ($slug !== $expectedSlug) {
 				return $this->redirect(['lang' => $lang, 'path' => $expectedSlug], 301);
