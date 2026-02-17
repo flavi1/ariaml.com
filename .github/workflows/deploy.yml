@@ -13,7 +13,7 @@ jobs:
 
       # Étape de Cache : accélère les futurs déploiements
       - name: Cache Composer dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v5
         with:
           path: vendor
           key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
