@@ -18,7 +18,7 @@ class FixPostsTranslationsToShadow extends BaseMigration
         $table = $this->table('posts_translations');
 
         // 1. Suppression des colonnes de l'ancienne stratégie EAV
-        $table->removeIndex(['locale', 'model', 'foreign_key', 'field'])
+        $table->removeIndex(['locale', 'model', 'foreign_key', 'field']);
         $table->removeColumn('model')
               ->removeColumn('foreign_key')
               ->removeColumn('field')
