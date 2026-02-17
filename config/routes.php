@@ -34,10 +34,11 @@ return function (RouteBuilder $routes): void {
 	$routes->connect('/', [
 		'controller' => 'Posts', 
 		'action' => 'publicView', 
-		'isHome' => true
+		'isHome' => true,
+		'lang' => $defaultLang // On définit la langue par défaut directement dans le tableau
 	], [
 		'_name' => 'home_default'
-	])->setDefaults(['lang' => $defaultLang]); // On fixe la langue par défaut ici
+	]);
 
 	// site.com/fr et site.com/en
 	$routes->connect('/{lang}', [
@@ -48,6 +49,7 @@ return function (RouteBuilder $routes): void {
 		'lang' => $langs, 
 		'_name' => 'home_lang'
 	]);
+	
     // --- 5. ROUTES PUBLIQUES (SLUGS HIÉRARCHIQUES) ---
     // On utilise une regex qui exclut les routes déjà définies si nécessaire
     
