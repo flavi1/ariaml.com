@@ -16,6 +16,7 @@ declare(strict_types=1);
  */
 namespace App;
 
+
 use Cake\Core\Configure;
 use Cake\Core\ContainerInterface;
 use Cake\Datasource\FactoryLocator;
@@ -61,6 +62,21 @@ class Application extends BaseApplication implements AuthenticationServiceProvid
         
         // Chargement du plugin Authentication
         $this->addPlugin('Authentication');
+        
+		// Chargement dynamique des réglages depuis la table 'settings'
+		try {
+			$settingsTable = (new TableLocator())->get('Settings');
+			$settings = $settingsTable->find()->all();
+			
+			foreach ($settings as $setting) {
+				// On stocke sous le namespace 'Settings' pour éviter les conflits
+				Configure::write('Settings.' . $setting->name, $setting->value);
+			}
+		} catch (\Exception $e) {
+			// On échoue silencieusement si la table n'existe pas encore 
+			// (utile lors de la première installation ou des migrations)
+		}
+        
     }
 
     /**

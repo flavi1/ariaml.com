@@ -13,23 +13,51 @@ use Cake\Core\Configure;
 class PostsController extends AppController
 {
     /**
-     * Index method
+     * dashboard method
      */
-    public function index()
-    {
-        // Utilisation de l'ordre structurel du TreeBehavior
-        $query = $this->Posts->find()
-            ->contain(['PostsTranslations'])
-            ->orderBy(['Posts.lft' => 'ASC']);
 
-        $posts = $this->paginate($query);
-        $this->set(compact('posts'));
+	public function dashboard()
+	{
+		
+/*
+        $config = [
+            'locales' => Configure::read('App.locales') ?? [],
+            'default' => Configure::read('App.defaultLanguage', 'fr')
+        ];
+        $this->set(compact('config'));
 
-        if ($this->request->is('json')) {
-            $this->viewBuilder()->setClassName('Json');
-            $this->viewBuilder()->setOption('serialize', ['posts']);
-        }
-    }
+*/
+		
+		// En CakePHP 5, on utilise fetchTable()
+		$settingsTable = $this->fetchTable('Settings');
+
+		if ($this->request->is(['post', 'put'])) {
+			$homeId = $this->request->getData('home_page_id');
+			if ($homeId) {
+				$setting = $settingsTable->findOrCreate(['name' => 'home_page_id']);
+				$setting->value = (string)$homeId; 
+				$settingsTable->save($setting);
+				
+				$this->Flash->success(__('Home page updated.'));
+				return $this->redirect(['action' => 'index']);
+			}
+		}
+
+		// On lit la config chargée via le bootstrap de l'Application
+		$currentPageId = \Cake\Core\Configure::read('Settings.home_page_id');
+
+		$query = $this->Posts->find('translations') 
+			->orderBy(['Posts.lft' => 'ASC']);
+
+		$posts = $this->paginate($query);
+		
+		$this->set(compact('posts', 'currentPageId'));
+
+		if ($this->request->is('json')) {
+			$this->viewBuilder()->setClassName('Json');
+			$this->viewBuilder()->setOption('serialize', ['posts']);
+		}
+	}
 
     /**
      * View method
@@ -40,7 +68,50 @@ class PostsController extends AppController
         $post = $this->Posts->get($id, contain: ['PostsTranslations', 'ParentPosts', 'ChildPosts']);
         $this->set(compact('post'));
     }
+    
+	public function publicView($id = null, $path = null)
+	{
+		$lang = $this->request->getParam('lang');
+		\Cake\I18n\I18n::setLocale($lang);
 
+		// 1. Identification par ID (Routes Home)
+		if ($id && is_numeric($id)) {
+			$query = $this->Posts->find('translations', locale: $lang)
+				->where(['Posts.id' => $id]);
+		} 
+		// 2. Identification par Path (Routes Slugs)
+		elseif ($path) {
+			// On transforme "un/deux" en ['un', 'deux']
+			$pathArray = explode('/', $path);
+			$slug = end($pathArray);
+			
+			$query = $this->Posts->find('translations', locale: $lang)
+				->where([
+					'OR' => [
+						'Posts.slug' => $slug,
+						'PostsTranslations.slug' => $slug
+					]
+				]);
+		} else {
+			throw new \Cake\Datasource\Exception\RecordNotFoundException();
+		}
+
+		$post = $query->contain(['ParentPosts', 'ChildPosts'])->firstOrFail();
+
+		// 3. Rigueur SEO (uniquement si on a un path)
+		if ($path) {
+			$slugUsed = end($pathArray);
+			$isDefaultLang = ($lang === \Cake\Core\Configure::read('App.defaultLanguage'));
+			$expectedSlug = $isDefaultLang ? $post->slug : ($post->_translations[$lang]->slug ?? $post->slug);
+
+			if ($slugUsed !== $expectedSlug) {
+				return $this->redirect(['lang' => $lang, 'path' => $expectedSlug], 301);
+			}
+		}
+
+		$isHome = (int)$post->id === (int)\Cake\Core\Configure::read('Settings.home_page_id');
+		$this->set(compact('post', 'isHome'));
+	}
     /**
      * Add method
      */
@@ -128,15 +199,4 @@ class PostsController extends AppController
         return $this->redirect(['action' => 'index']);
     }
 
-    /**
-     * Dashboard method (CmsDashboard)
-     */
-    public function dashboard()
-    {
-        $config = [
-            'locales' => Configure::read('App.locales') ?? [],
-            'default' => Configure::read('App.defaultLanguage', 'fr')
-        ];
-        $this->set(compact('config'));
-    }
 }
