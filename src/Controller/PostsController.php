@@ -71,15 +71,20 @@ class PostsController extends AppController
     
 	public function publicView($idOrPath = null)
 	{
+	// Debug de sécurité
+		if ($idOrPath === null) {
+			 // Si c'est encore null ici, c'est que le $homeId n'était pas chargé 
+			 // au moment où le fichier routes.php a été lu (table settings vide ?)
+			 throw new \Cake\Datasource\Exception\RecordNotFoundException("ID Home manquant.");
+		}
+
 		$lang = $this->request->getParam('lang');
 		\Cake\I18n\I18n::setLocale($lang);
 
-		// Si on arrive de la home, $idOrPath est l'ID. 
-		// Si on arrive d'un slug, c'est une chaîne non-numérique.
+		// Force le test sur la valeur brute
 		$isId = is_numeric($idOrPath);
 
 		if ($isId) {
-			// Force le type entier pour la requête
 			$query = $this->Posts->find('translations', locale: $lang)
 				->where(['Posts.id' => (int)$idOrPath]);
 		} else {

@@ -28,21 +28,20 @@ return function (RouteBuilder $routes): void {
         $builder->connect('/posts/{action}/*', ['controller' => 'Posts', 'lang' => $defaultLang]);
     });
 
-    // --- 4. RACINES DU SITE (HOME) ---
-    // Utilisation de setPass() pour garantir que homeId est bien transmis sans casser le matching
-    if ($homeId) {
-        // site.com/
-        $routes->connect('/', 
-            ['controller' => 'Posts', 'action' => 'publicView', 'lang' => $defaultLang], 
-            ['_name' => 'home_default']
-        )->setPass([(string)$homeId]);
+	// --- 4. RACINES DU SITE (HOME) ---
+	if ($homeId) {
+		// site.com/
+		$routes->connect('/', 
+			['controller' => 'Posts', 'action' => 'publicView', 'idOrPath' => $homeId, 'lang' => $defaultLang], 
+			['_name' => 'home_default']
+		);
 
-        // site.com/fr
-        $routes->connect('/{lang}', 
-            ['controller' => 'Posts', 'action' => 'publicView'], 
-            ['lang' => $langs, '_name' => 'home_lang']
-        )->setPass([(string)$homeId]);
-    }
+		// site.com/fr
+		$routes->connect('/{lang}', 
+			['controller' => 'Posts', 'action' => 'publicView', 'idOrPath' => $homeId], 
+			['lang' => $langs, '_name' => 'home_lang']
+		);
+	}
 
     // --- 5. ROUTES PUBLIQUES (SLUGS HIÉRARCHIQUES) ---
     // On utilise une regex qui exclut les routes déjà définies si nécessaire
