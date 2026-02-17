@@ -89,7 +89,8 @@ class PostsController extends AppController
 			$query = $this->Posts->find('translations', locale: $lang)
 				->where(['Posts.id' => (int)$idOrPath]);
 		} else {
-			$slug = end(explode('/', $idOrPath));
+			$_exploded = explode('/', (string)$idOrPath);
+			$slug = end($_exploded);
 			$query = $this->Posts->find('translations', locale: $lang)
 				->where([
 					'OR' => [
