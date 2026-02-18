@@ -12,22 +12,19 @@ use Cake\Core\Configure;
  */
 class PostsController extends AppController
 {
+
+	public function beforeFilter(\Cake\Event\EventInterface $event)
+	{
+		parent::beforeFilter($event);
+		$this->Authentication->allowUnauthenticated(['publicView']);	
+	}
+
     /**
      * dashboard method
      */
 
 	public function dashboard()
 	{
-		
-/*
-        $config = [
-            'locales' => Configure::read('App.locales') ?? [],
-            'default' => Configure::read('App.defaultLanguage', 'fr')
-        ];
-        $this->set(compact('config'));
-
-*/
-		
 		// En CakePHP 5, on utilise fetchTable()
 		$settingsTable = $this->fetchTable('Settings');
 
