@@ -28,18 +28,13 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
     </title>
     <?= $this->Html->meta('icon') ?>
 
-    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake']) ?>
+    <?= $this->Html->css(['normalize.min', 'milligram.min', 'fonts', 'cake', 'style']) ?>
 
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
     
-    <style>
-        .lang-switcher { display: inline-block; margin-left: 2rem; font-size: 1.2rem; }
-        .lang-item { font-weight: bold; text-decoration: none; padding: 0 0.5rem; }
-        .lang-item.active { color: #d33c43; text-decoration: underline; }
-        .lang-separator { color: #606c76; opacity: 0.5; }
-    </style>
+
 </head>
 <body>
 	<div class="logo"><img alt="Aria Markup Language" src="https://flavi1.github.io/aria-ml/src/icon/logo.svg"></div>

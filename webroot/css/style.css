@@ -1,0 +1,17 @@
+.logo>img {
+    max-width: 150px;
+}
+
+.logo {
+    text-align: center;
+}
+
+nav.top-nav {
+    display: block;
+    text-align: center;
+}
+
+.lang-switcher { display: inline-block; margin-left: 2rem; font-size: 1.2rem; }
+.lang-item { font-weight: bold; text-decoration: none; padding: 0 0.5rem; }
+.lang-item.active { color: #d33c43; text-decoration: underline; }
+.lang-separator { color: #606c76; opacity: 0.5; }
