@@ -42,6 +42,7 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
     </style>
 </head>
 <body>
+	<div class="logo"><img alt="Aria Markup Language" src="https://flavi1.github.io/aria-ml/src/icon/512.png"></div>
     <nav class="top-nav">
         <div class="top-nav-title">
             <a href="<?= $this->Url->build('/') ?>"><span>Aria</span>ML</a>
@@ -76,6 +77,10 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
         <div class="top-nav-links">
             <!--a target="_blank" rel="noopener" href="https://book.cakephp.org/5/">Documentation</a>
             <a target="_blank" rel="noopener" href="https://api.cakephp.org/">API</a-->
+            <span>Github:</span>
+            <a target="_blank" rel="noopener" href="https://github.com/flavi1/aria-ml">Webextension &amp; JS Polyfill</a>
+            <a target="_blank" rel="noopener" href="https://github.com/flavi1/ariaml-ssr-php">SSR PHP Helper</a>
+            <a target="_blank" rel="noopener" href="https://github.com/flavi1/ariaml.com">This Website</a>
         </div>
     </nav>
     <main class="main">
