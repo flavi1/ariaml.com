@@ -17,7 +17,7 @@ $this->assign('title', $post->title);
     <?php if (!$isHome): ?>
     <nav class="breadcrumb">
         <?= $this->Html->link(__('Home'), '/') ?>
-        <?php if ($post->has('parent_post')): ?>
+        <?php if ($post->has('parent_post') && $post->parent_post): ?>
             / <?= h($post->parent_post->title) ?>
         <?php endif; ?>
     </nav>
