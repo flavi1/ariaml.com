@@ -75,7 +75,7 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
             <!--a target="_blank" rel="noopener" href="https://book.cakephp.org/5/">Documentation</a>
             <a target="_blank" rel="noopener" href="https://api.cakephp.org/">API</a-->
             <span>Github:</span>
-            <a target="_blank" rel="noopener" href="https://github.com/flavi1/aria-ml">Webextension &amp; JS Polyfill</a>
+            <a target="_blank" rel="noopener" href="https://github.com/flavi1/aria-ml">JS Webext &amp; Standalone</a>
             <a target="_blank" rel="noopener" href="https://github.com/flavi1/ariaml-ssr-php">SSR PHP Helper</a>
             <a target="_blank" rel="noopener" href="https://github.com/flavi1/ariaml.com">This Website</a>
         </div>
