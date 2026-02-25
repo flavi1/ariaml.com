@@ -39,7 +39,7 @@ unset($queryParams['pass'], $queryParams['_matchedRoute'], $queryParams['_Token'
 <body>
 	<a href="<?= $this->Url->build('/') ?>" class="logo">
 		<img alt="" role="presentation" src="https://flavi1.github.io/aria-ml/src/icon/logo.svg">
-		<div>Aria Markup Language</div>
+		<h1>Aria Markup Language</h1>
 	</a>
     <nav class="top-nav">
         <div class="top-nav-title">
